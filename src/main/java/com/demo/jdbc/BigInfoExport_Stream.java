@@ -1,0 +1,67 @@
+package com.demo.jdbc;
+
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+/**
+ * 采用流的方式对数据库中100万条数据进行查询
+ * @author fuzamei
+ *
+ */
+public class BigInfoExport_Stream {
+
+	public static void main(String[] args) throws Exception{
+		
+		Thread.sleep(2000);
+		
+		File file = new File("C:\\Users\\fuzamei\\Desktop\\to.csv");
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
+		
+//		String url = "jdbc:mysql://localhost:3306/biginfo?useUnicode=true&characterEncoding=utf8&autoReconnect=true&failOverReadOnly=false&allowMultiQueries=true&useSSL=false";
+		String url = "jdbc:mysql://localhost:3306/biginfo?useUnicode=true&characterEncoding=utf8&autoReconnect=true&failOverReadOnly=false&allowMultiQueries=true&useSSL=false";
+		String username = "root";
+		String password = "root";
+		//1.加载驱动程序
+		Class.forName("com.mysql.jdbc.Driver");
+		//2.获得数据库链接
+		Connection connection = DriverManager.getConnection(url, username, password);
+		
+//		Statement statement = connection.createStatement();
+		
+		Statement statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		statement.setFetchSize(Integer.MIN_VALUE);
+		ResultSet resultSet = statement.executeQuery("select * from user");
+		
+		while(resultSet.next()){
+			int id = resultSet.getInt("id");
+			String uname = resultSet.getString("username");
+			String pwd = resultSet.getString("password");
+			int age = resultSet.getInt("age");
+			int sex = resultSet.getInt("sex");
+			double money = resultSet.getDouble("money");
+			String occppation = resultSet.getString("occupation");
+			String name = resultSet.getString("person_name");
+			long ct = resultSet.getLong("ctime");
+			long ut = resultSet.getLong("utime");
+			System.out.println(id + ","+uname+","+pwd+","+age+","+sex+","+money+","+occppation+","+name+","+ct+","+ut);
+//			System.out.println("\r\n");
+			bw.write(id + ","+uname+","+pwd+","+age+","+sex+","+money+","+occppation+","+name+","+ct+","+ut);
+			bw.write("\r\n");
+		}
+		
+		bw.close();
+		resultSet.close();
+		statement.close();
+		connection.close();
+		
+		Thread.sleep(50000);
+	}
+	
+}

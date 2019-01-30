@@ -1,0 +1,37 @@
+package com.demo.futureTask.selfDesign;
+
+public class FutureTask<T> implements Future<T> {
+
+	private T result;
+	
+	private boolean isDone = false;
+	
+	private final Object LOCK = new Object();
+	
+	@Override
+	public T get() throws InterruptedException {
+		synchronized (LOCK) {
+			while(!isDone){
+				LOCK.wait();
+			}
+			return result;
+		}
+	}
+	
+	protected void finished(T result){
+		synchronized (LOCK) {
+			if(isDone){
+				return;
+			}
+			this.result = result;
+			this.isDone = true;
+			LOCK.notifyAll();
+		}
+	}
+
+	@Override
+	public boolean done() {
+		return this.isDone;
+	}
+
+}
